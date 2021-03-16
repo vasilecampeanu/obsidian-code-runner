@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.1",
-	"minAppVersion": "0.9.12",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md/about",
+	"id": "obsidian-code-runner",
+	"name": "Code Runner",
+	"version": "0.0.1",
+	"minAppVersion": "0.11.5",
+	"description": "This plugin enables you to run code from inside obsidian pages.",
+	"author": "Vasile Campeanu",
+	"authorUrl": "https://github.com/vasilecampeanu",
 	"isDesktopOnly": false
 }

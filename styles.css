@@ -1,4 +1,37 @@
-/* Sets all the text color to red! */
-body {
-    color: red;
+.has-run-button 
+{
+    position: relative;
+}
+
+.run-code-button
+{
+    position: absolute;
+    
+    top: 0px;
+    right: 0px;
+
+    height: 100% !important;
+    
+    margin-left: auto;
+    margin-right: 0;
+
+    display: block;
+    
+    padding: 2.5px;
+    font-size: 0.8em;
+}
+
+.run-code-button span
+{
+    display: inline-block;
+    transform: rotate(90deg);
+    font-weight: bold;
+    font-family: sans-serif;
+    color: green;
+    letter-spacing: 2px;
+}
+
+pre[class*="language-"]
+{
+    margin-right: 40px !important;
 }
