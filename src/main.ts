@@ -1,7 +1,13 @@
 import { App, Modal, Notice, Plugin, PluginManifest, PluginSettingTab, MarkdownView, Setting } from 'obsidian';
 
+const supported_language = [ 
+    "c",
+    "cpp",
+    "python"
+];
+
 const exclude_languages = [ 
-	"todoist"
+    "todoist"
 ];
 
 interface CodeRunnerSettings {
@@ -32,83 +38,123 @@ export default class CodeRunner extends Plugin {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
-	injectButtons() 
-    {
-		document.querySelectorAll('pre > code').forEach(function (codeBlock:any) {
-            
-			var pre = codeBlock.parentNode;
-			var button = document.createElement('button');
-            var span   = document.createElement('span');
-
-			for (let language of exclude_languages) {
-                if (pre.classList.contains('language-'+ language)) {
-                    return;
-                }
-            }
-
-			if (pre.parentNode.classList.contains('has-run-button')) {
-				return;
-			}
-
-			pre.parentNode.classList.add('has-run-button');
-
-			button.className = 'run-code-button';
-			button.type = 'button';
-
-			button.addEventListener('click', function () {
-				
-    			var fs = require('fs');
-
-				if (pre.classList.contains(`language-cpp`)) {
-					fs.writeFileSync(process.cwd() + '\\coderunnertmp.cpp', codeBlock.innerText);
-				}
-
-				if (pre.classList.contains(`language-c`)) {
-					fs.writeFileSync(process.cwd() + '\\coderunnertmp.c', codeBlock.innerText);
-				}
-
-				if (pre.classList.contains(`language-python`)) {
-					fs.writeFileSync(process.cwd() + '\\coderunnertmp.py', codeBlock.innerText);
-				}
-
-                const cp = require('child_process');
-
-                const exec_options = {
-                    cwd: null,
-                    env: null,
-                    encoding: 'utf8',
-                    timeout: 0,
-                    maxBuffer: 200 * 1024,
-                    killSignal: 'SIGTERM'
-                };
-				
-				if (pre.classList.contains(`language-cpp`)) {
-					cp.exec('g++ ' + process.cwd() + '\\coderunnertmp.cpp -o coderunnertmp && START cmd /k coderunnertmp.exe & pause & exit', exec_options, (err, stdout, stderr) => {
-					});
-				}
-
-				if (pre.classList.contains(`language-c`)) {
-					cp.exec('gcc ' + process.cwd() + '\\coderunnertmp.c -o coderunnertmp && START cmd /k coderunnertmp.exe & pause & exit', exec_options, (err, stdout, stderr) => {
-					});
-				}
-				
-                if (pre.classList.contains(`language-python`)) {
-					cp.exec('START cmd /k python ' + process.cwd() + '\\coderunnertmp.py & pause & exit', exec_options, (err, stdout, stderr) => {
-					});
-				}
-			
-            });
-
-			pre.appendChild(button);
-            span.innerText = 'run';
-			button.appendChild(span);
-		});
-
-	}
-
     update()
     {
-        this.injectButtons();
+		document.querySelectorAll('pre > code').forEach(function (codeBlock:any) {
+            const { exec } = require('child_process');
+			
+            var pre = codeBlock.parentNode;
+
+            for (let language of supported_language) {
+                if (pre.classList.contains('language-'+ language)) {
+
+                    var button = document.createElement('button');
+                    var span   = document.createElement('span');
+                    var panel  = document.createElement('div');
+                    
+                    for (let language of exclude_languages) {
+                        if (pre.classList.contains('language-'+ language)) {
+                            return;
+                        }
+                    }
+        
+                    if (pre.parentNode.classList.contains('has-output-panel')) {
+                        return;
+                    }
+                    
+                    pre.parentNode.classList.add('has-output-panel');
+        
+                    panel.className = "output-panel";
+                    panel.id = "outpanel";
+
+                    if (pre.parentNode.classList.contains('has-run-button')) {
+                        return;
+                    }
+        
+                    pre.parentNode.classList.add('has-run-button');
+        
+                    button.className = 'run-code-button';
+                    button.type = 'button';
+                    
+                    
+                    button.addEventListener('click', function () {
+                        
+                        var fs = require('fs');
+                        panel.style.display = "block";
+
+                        if (process.platform === "win32") {
+                            if (pre.classList.contains(`language-c`)) {
+
+                                fs.writeFileSync(process.cwd() + '\\coderunnertmp.c', codeBlock.innerText);
+    
+                                exec('gcc ' + process.cwd() + '\\coderunnertmp.c -o coderunnertmp && coderunnertmp.exe', (error, stdout, stderr) => {
+                                    if (error) {
+                                        panel.innerText = `${error.message}`;
+                                        return;
+                                    }
+                                    
+                                    if (stderr) {
+                                        panel.innerText = `${stderr}`;
+                                        return;
+                                    }
+            
+                                    panel.innerText = `${stdout}`;
+                                });
+                            }
+
+                            if (pre.classList.contains(`language-cpp`)) {
+                                fs.writeFileSync(process.cwd() + '\\coderunnertmp.cpp', codeBlock.innerText);
+    
+                                exec('g++ ' + process.cwd() + '\\coderunnertmp.cpp -o coderunnertmp && coderunnertmp.exe', (error, stdout, stderr) => {
+                                    
+                                    if (error) {
+                                        panel.innerText = `${error.message}`;
+                                        return;
+                                    }
+                                    
+                                    if (stderr) {
+                                        panel.innerText = `${stderr}`;
+                                        return;
+                                    }
+                                    
+                                    panel.innerText = `${stdout}`;
+                                });
+                            }
+            
+                            if (pre.classList.contains(`language-python`)) {
+                                fs.writeFileSync(process.cwd() + '\\coderunnertmp.py', codeBlock.innerText);
+    
+                                exec('python ' + process.cwd() + '\\coderunnertmp.py', (error, stdout, stderr) => {
+                                    if (error) {
+                                        panel.innerText = `${error.message}`;
+                                        return;
+                                    }
+                                    
+                                    if (stderr) {
+                                        panel.innerText = `${stderr}`;
+                                        return;
+                                    }
+            
+                                    panel.innerText = `${stdout}`;
+                                });
+                            }
+                        } else if(process.platform === "linux") {
+                            
+                        } else if(process.platform === "darwin") {
+
+                        } else {
+                            console.log('ERROR: This platform is not supported!');
+                        }
+                    });
+        
+                    span.innerText = 'run';
+                    
+                    pre.appendChild(panel);
+                    pre.appendChild(button);
+                    button.appendChild(span);
+                }
+            }
+		});
     }
 
 }

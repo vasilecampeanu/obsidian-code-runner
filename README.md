@@ -10,6 +10,16 @@ The repo depends on the latest plugin API (obsidian.d.ts)
 - CPP
 - Python
 
+### To Do
+- Add a setting tab
+    - Add the ability to change between multiple compilers ex. C/C++ - MinGW/clang
+    - Add the ability to set a directory where code-runner will put its temporary files
+    - Add the ability to make the output table visible/hidden by default
+- Add a copy/clear/stop button in the output-panel
+- Add a command/button that kills the current executable that is running
+- Solve the errors for programs that have an infinite loop
+- Add support for more languages
+
 ### How to use
 
 - Clone this repo.

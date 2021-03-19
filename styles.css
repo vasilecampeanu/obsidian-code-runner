@@ -17,8 +17,15 @@
 
     display: block;
     
-    padding: 2.5px;
-    font-size: 0.8em;
+    padding: 0px;
+    font-size: 0.9em;
+
+    background-color: #303030;
+}
+
+.has-run-button button:hover
+{
+    background-color: #3C3836;
 }
 
 .run-code-button span
@@ -27,11 +34,30 @@
     transform: rotate(90deg);
     font-weight: bold;
     font-family: sans-serif;
-    color: green;
-    letter-spacing: 2px;
+    color: #ADFF2F;
+    letter-spacing: 2.5px;
 }
 
 pre[class*="language-"]
 {
-    margin-right: 40px !important;
+    margin-right: 37.5px !important;
+}
+
+.output-panel
+{
+    width: 100%;
+    min-height: 44px;
+    max-height: 500px;
+    background-color: #303030;
+    margin-top: 25px;
+    padding: 10px;
+    overflow: auto;
+    display: none;
+}
+
+/*solve style conflicts with copy-code-button plugin*/
+
+pre[class*="language-"] .copy-code-button
+{
+    margin-right: 37.5px !important;
 }

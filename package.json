@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "childprocess": "^2.0.2",
-    "file-system": "^1.2.2"
+    "file-system": "^1.2.2",
+    "xterm": "^4.11.0"
   }
 }
