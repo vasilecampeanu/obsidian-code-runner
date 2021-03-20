@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-code-runner",
 	"name": "Code Runner",
-	"version": "0.0.1",
+	"version": "0.0.4",
 	"minAppVersion": "0.11.5",
 	"description": "This plugin enables you to run code from inside obsidian pages.",
 	"author": "Vasile Campeanu",

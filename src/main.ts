@@ -1,4 +1,5 @@
 import { App, Modal, Notice, Plugin, PluginManifest, PluginSettingTab, MarkdownView, Setting } from 'obsidian';
+import {CodeRunnerSettingTab, CodeRunnerSettings, DEFAULT_SETTINGS} from './settings'
 
 const supported_language = [ 
     "c",
@@ -9,14 +10,6 @@ const supported_language = [
 const exclude_languages = [ 
     "todoist"
 ];
-
-interface CodeRunnerSettings {
-	mySetting: string;
-}
-
-const DEFAULT_SETTINGS: CodeRunnerSettings = {
-	mySetting: 'default'
-}
 
 export default class CodeRunner extends Plugin {
 
@@ -29,29 +22,44 @@ export default class CodeRunner extends Plugin {
 
 	async onload()
     {
+        console.log('load obsidian-code-runner');
 		await this.loadSettings();
+        this.addSettingTab(new CodeRunnerSettingTab(this.app, this));
 		this.registerInterval(window.setInterval(this.update.bind(this), 1000));
 	}
 
 	async loadSettings() 
     {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
+        console.log(this.settings.path);
+    }
 
+    async saveSettings() 
+    {
+		await this.saveData(this.settings);
+	}
+    
     update()
     {
+        var tempFolderPath = this.settings.path;
+        var outputPanelDisplay = this.settings.display;
+        var c_compiler = this.settings.c_compiler;
+        var cpp_compiler = this.settings.cpp_compiler;
+
 		document.querySelectorAll('pre > code').forEach(function (codeBlock:any) {
             const { exec } = require('child_process');
-			
-            var pre = codeBlock.parentNode;
 
+            var pre = codeBlock.parentNode;
+            
             for (let language of supported_language) {
                 if (pre.classList.contains('language-'+ language)) {
 
                     var button = document.createElement('button');
                     var span   = document.createElement('span');
-                    var panel  = document.createElement('div');
-                    
+
+                    var opanel  = document.createElement('div');
+                    var opanel_content  = document.createElement('span');
+
                     for (let language of exclude_languages) {
                         if (pre.classList.contains('language-'+ language)) {
                             return;
@@ -64,8 +72,16 @@ export default class CodeRunner extends Plugin {
                     
                     pre.parentNode.classList.add('has-output-panel');
         
-                    panel.className = "output-panel";
-                    panel.id = "outpanel";
+                    
+                    opanel.className = "output-panel";
+                    opanel.id = "outpanel";
+
+                    if (outputPanelDisplay == false) {
+                        opanel.style.display = "none";
+                    } else {
+                        opanel.style.display = "block";
+                    }
+
 
                     if (pre.parentNode.classList.contains('has-run-button')) {
                         return;
@@ -80,64 +96,67 @@ export default class CodeRunner extends Plugin {
                     button.addEventListener('click', function () {
                         
                         var fs = require('fs');
-                        panel.style.display = "block";
+
+                        opanel.style.display = "block";
 
                         if (process.platform === "win32") {
                             if (pre.classList.contains(`language-c`)) {
 
-                                fs.writeFileSync(process.cwd() + '\\coderunnertmp.c', codeBlock.innerText);
+                                fs.writeFileSync(tempFolderPath + '\\coderunnertmp.c', codeBlock.innerText);
     
-                                exec('gcc ' + process.cwd() + '\\coderunnertmp.c -o coderunnertmp && coderunnertmp.exe', (error, stdout, stderr) => {
+                                exec(c_compiler + ' ' + tempFolderPath + '\\coderunnertmp.c -o coderunnertmp && coderunnertmp.exe', (error, stdout, stderr) => {
                                     if (error) {
-                                        panel.innerText = `${error.message}`;
+                                        opanel_content.innerText = `${error.message}`;
                                         return;
                                     }
                                     
                                     if (stderr) {
-                                        panel.innerText = `${stderr}`;
+                                        opanel_content.innerText = `${stderr}`;
                                         return;
                                     }
             
-                                    panel.innerText = `${stdout}`;
+                                    opanel_content.innerText = `${stdout}`;
                                 });
                             }
 
                             if (pre.classList.contains(`language-cpp`)) {
-                                fs.writeFileSync(process.cwd() + '\\coderunnertmp.cpp', codeBlock.innerText);
+                                
+                                fs.writeFileSync(tempFolderPath + '\\coderunnertmp.cpp', codeBlock.innerText);
     
-                                exec('g++ ' + process.cwd() + '\\coderunnertmp.cpp -o coderunnertmp && coderunnertmp.exe', (error, stdout, stderr) => {
-                                    
+                                exec(cpp_compiler + ' ' + tempFolderPath + '\\coderunnertmp.cpp -o coderunnertmp && coderunnertmp.exe', (error, stdout, stderr) => {
                                     if (error) {
-                                        panel.innerText = `${error.message}`;
+                                        opanel_content.innerText = `${error.message}`;
                                         return;
                                     }
                                     
                                     if (stderr) {
-                                        panel.innerText = `${stderr}`;
+                                        opanel_content.innerText = `${stderr}`;
                                         return;
                                     }
                                     
-                                    panel.innerText = `${stdout}`;
+                                    opanel_content.innerText = `${stdout}`;
                                 });
                             }
             
                             if (pre.classList.contains(`language-python`)) {
-                                fs.writeFileSync(process.cwd() + '\\coderunnertmp.py', codeBlock.innerText);
+                                
+                                fs.writeFileSync(tempFolderPath + '\\coderunnertmp.py', codeBlock.innerText);
     
-                                exec('python ' + process.cwd() + '\\coderunnertmp.py', (error, stdout, stderr) => {
+                                exec('python ' + tempFolderPath + '\\coderunnertmp.py', (error, stdout, stderr) => {
                                     if (error) {
-                                        panel.innerText = `${error.message}`;
+                                        opanel_content.innerText = `${error.message}`;
                                         return;
                                     }
                                     
                                     if (stderr) {
-                                        panel.innerText = `${stderr}`;
+                                        opanel_content.innerText = `${stderr}`;
                                         return;
                                     }
             
-                                    panel.innerText = `${stdout}`;
+                                    opanel_content.innerText = `${stdout}`;
                                 });
                             }
+                            
                         } else if(process.platform === "linux") {
                             
                         } else if(process.platform === "darwin") {
@@ -146,11 +165,11 @@ export default class CodeRunner extends Plugin {
                             console.log('ERROR: This platform is not supported!');
                         }
                     });
-        
-                    span.innerText = 'run';
-                    
-                    pre.appendChild(panel);
+
+                    pre.appendChild(opanel);
+                    opanel.appendChild(opanel_content);
                     pre.appendChild(button);
+                    span.innerText = 'run';
                     button.appendChild(span);
                 }
             }

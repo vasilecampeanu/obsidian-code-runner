@@ -52,7 +52,6 @@ pre[class*="language-"]
     margin-top: 25px;
     padding: 10px;
     overflow: auto;
-    display: none;
 }
 
 /*solve style conflicts with copy-code-button plugin*/

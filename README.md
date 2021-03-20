@@ -19,6 +19,8 @@ The repo depends on the latest plugin API (obsidian.d.ts)
 - Add a command/button that kills the current executable that is running
 - Solve the errors for programs that have an infinite loop
 - Add support for more languages
+- Add the option to exclude a specific file
+- Refactoring
 
 ### How to use
 
